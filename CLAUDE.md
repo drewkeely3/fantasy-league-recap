@@ -104,6 +104,16 @@ Transactions are folded into every checkpoint as a "since last update" section, 
 - Waiver clears are not Wednesday-only either. Real data showed a secondary waiver batch clearing early Friday, consistent with `waiver_clear_days: 2` (a dropped player's own 2-day clock, independent of the league's fixed weekly waiver day). The pipeline does not hardcode "waivers only show up Wednesday", every checkpoint reports whatever is new in that leg's transaction list, whatever day it cleared.
 - An earlier draft of the 7-checkpoint schedule used different times per day (morning for some, night for others, trying to catch Friday/Saturday games same-day). This broke on real schedule facts: the 2026 Melbourne game (nominally "Friday" in Australia) actually kicks off 8:35pm ET Thursday because of the date-line crossing, so no single "Friday night" time reliably catches every irregular game. The uniform "recap yesterday, preview today, always 8am" pattern avoids needing to guess same-day kickoff times at all.
 
+## League economics (buy-in/payouts, PENDING confirmation)
+This is a buy-in league; user wants to reference standing-relative-to-the-money-pot
+in jokes (e.g. a manager on a losing streak "made a $25 donation, thanks"), added
+2026-08-13. Strictly retrospective framing only, same rule as other roasting per
+the Tone clarification above. Tentative numbers per user, **not confirmed, do not
+hardcode into any real checkpoint yet**: $25 entry/team, payouts $250 to 1st, $25
+to 2nd, $25 to regular season champion (12 teams x $25 = $300 pot, matches the
+$250+$25+$25 payout total). User will confirm or correct these after this season's
+draft (2026-08-25). Revisit before building this content feature for real.
+
 ## Content scope
 
 **Looking back:**
@@ -125,12 +135,16 @@ Transactions are folded into every checkpoint as a "since last update" section, 
 ## Season boundary (RESOLVED, confirmed with user 2026-08-13)
 Check the league's `status` field each run and only proceed if it's exactly `"in_season"`; skip cleanly (no publish, no state update) for any other value. Simpler than an earlier draft that proposed computing from `playoff_week_start` + bracket size: `status` already encodes the answer directly, confirmed against real data (2025 league: `status: "complete"` correlates exactly with `last_scored_leg: 17`, matching `playoff_week_start: 15` + a 6-team/3-round bracket). This single check also covers the *other* boundary the bracket-math approach didn't: `status` is `"pre_draft"` before the draft happens and presumably `"drafting"` during it (the 2026 league showed `pre_draft` as of Aug 2026), so checkpoints that fire before the season starts skip cleanly too, not just ones after it ends.
 
-## Publishing (not yet decided)
-Push to a free static host (GitHub Pages or Cloudflare Pages under consideration), kept intentionally separate from wherever the Routine itself runs, so the public page stays plain, read-only, no login, no backend. Mechanics of the Routine publishing to it (e.g. committing to a repo that auto-deploys) not yet designed.
+## Publishing
+RESOLVED, see "Publishing branch" under Architecture above: GitHub Pages, `claude/publish` branch, `/docs` folder, plain read-only public page, no login, no backend.
+
+### UI navigation (not yet designed, notes only)
+Deferred until a real design/mockup pass with the user, but two decisions already made shape it: page structure is one continuously-updated page per week (current week on top, archive of past weeks below/linked), and checkpoint output is tagged by content category (`recap_narrative`, `transactions`, `standings`, `schedule`, `awards`, see Content scope) specifically so a tabbed or sectioned layout (user suggested something like "NFL team report / fantasy report / transactions" tabs, 2026-08-13) can be built later without re-parsing old published content. Don't build the actual tabs/nav yet, just keep output categorized so the option stays open.
 
 ## Backlog / future ideas (not building yet)
 - Head-to-head history in the "next week's matchups" section ("last time these two played, Team A won 112-98"), purely factual. Straightforward within a single season. If extended across seasons, must match by manager/user_id, not roster_id, since Sleeper reassigns roster_ids fresh each season.
 - Seasonal UI theming (Halloween, Thanksgiving, Christmas) for the published page, purely cosmetic, does not touch the no-advice rule, can be date-driven off the recap's own publish date.
+- Money/buy-in jokes tied to standing relative to the payout structure, see "League economics" above, blocked on the user confirming real numbers after the 2026-08-25 draft.
 
 ## Conventions
 - No em dashes in documentation, commit messages, or anything shared with others (inherited from the draft board project's convention).
