@@ -1,7 +1,7 @@
 # Fantasy League Recap
 
 ## Status
-Design phase complete (schedule, content scope, transaction mechanics all verified against real data). Data-pull layer built and verified against real 2025 season data (see "Data-pull layer" under Architecture). Persisted state, publishing, season boundary check, all 7 checkpoint prompts (rough draft), and the no-advice-check subagent are all built and tested (see checkpoints.md). Remaining: wire the 7 checkpoints as real scheduled Routines, a real UI/design pass, and an end-to-end test before trusting this on the live league. This file is the handoff from a scoping conversation done in Cowork; continue building from here.
+Design phase complete (schedule, content scope, transaction mechanics all verified against real data). Data-pull layer built and verified against real 2025 season data (see "Data-pull layer" under Architecture). Persisted state, publishing, season boundary check, all 7 checkpoint prompts (rough draft), and the no-advice-check subagent are all built and tested (see checkpoints.md). All 7 checkpoints are wired up as real Routines (see "Routines" under Weekly schedule), currently paused. Remaining: a real UI/design pass and an end-to-end test before enabling this on the live league. This file is the handoff from a scoping conversation done in Cowork; continue building from here.
 
 ## What this is
 An automated, scheduled system that generates a recurring fantasy football league recap for a Sleeper league, built as a Claude Code Routine (scheduled task). Shared with the whole league, not just the user.
@@ -86,6 +86,21 @@ Sleeper's `/transactions/<leg>` endpoint returns the whole leg's list, not a "si
 Every checkpoint runs at the same time, every day. Each one does two things: recap whatever games finished the day before, and preview today's matchups if any games are happening today.
 
 Cron shape for each: `0 12 * * N` (12:00 UTC = 8am EDT, N = day of week). Not adjusted for DST; after DST ends (Nov 1, 2026) all seven drift together to 7am ET, still safe on both edges. This was deliberately not fixed, the drift is cosmetic only.
+
+### Routines (created 2026-08-13, currently PAUSED)
+All 7 created via RemoteTrigger, repo-reference design (each prompt just tells the agent to read CLAUDE.md + the relevant checkpoints.md sections from its own fresh clone, rather than duplicating ~150 lines of instructions 7 times - keeps a single source of truth, edit checkpoints.md once and every routine picks it up next firing). Environment: `env_015PV7uLAqCy3ftWnTbN4s5c` (has `api.sleeper.app` allowlisted, see network access note above). Model: claude-sonnet-5. Created paused (`enabled: false`) per user decision, to avoid ~12 days of no-op daily firings before the 2026-08-25 draft; the season boundary check would make enabling now technically safe, but there's no reason to burn usage before there's real content to generate. Enable when ready (closer to season start, after the UI pass and end-to-end test).
+
+| Day | Trigger ID | Cron |
+|---|---|---|
+| Tuesday | `trig_01EusRdwpvm14tNc9s84YrGm` | `0 12 * * 2` |
+| Wednesday | `trig_018Rafrmavzid3MPY7RrRFKK` | `0 12 * * 3` |
+| Thursday | `trig_01ENALXmKQpWmjEdzxFFWWvS` | `0 12 * * 4` |
+| Friday | `trig_01TGJeWgF8kKb2XjqJ1SZgzL` | `0 12 * * 5` |
+| Saturday | `trig_011Y2YxoNNPUCov9LSXKZMLo` | `0 12 * * 6` |
+| Sunday | `trig_01Ce6H4CjeJvt7V8pyzqQzo6` | `0 12 * * 0` |
+| Monday | `trig_01YRd2MRoG3dqowCMtM8yMS7` | `0 12 * * 1` |
+
+Verified before creating these: a Routine session has access to the `Agent` tool for spawning the no-advice-check subagent with genuinely fresh context (tested 2026-08-13 with a trivial PONG round-trip through a real Routine firing, not assumed).
 
 Verified safe on both edges: latest realistic game finish (~1am ET, primetime OT) leaves 8am with 7+ hours buffer; earliest realistic same-day kickoff found (NFL London games, 9:30am ET) still leaves 8am comfortably ahead of it.
 
