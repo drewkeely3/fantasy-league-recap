@@ -183,6 +183,7 @@ Deferred until a real design/mockup pass with the user, but two decisions alread
 - Head-to-head history in the "next week's matchups" section ("last time these two played, Team A won 112-98"), purely factual. Straightforward within a single season. If extended across seasons, must match by manager/user_id, not roster_id, since Sleeper reassigns roster_ids fresh each season.
 - Seasonal UI theming (Halloween, Thanksgiving, Christmas) for the published page, purely cosmetic, does not touch the no-advice rule, can be date-driven off the recap's own publish date.
 - Money/buy-in jokes tied to standing relative to the payout structure, see "League economics" above, blocked on the user confirming real numbers after the 2026-08-25 draft.
+- Projected points / projected top performers for **next week's** matchups (Fantasy Hub). Deliberately declined, not just deferred, per user 2026-08-13: the page only regenerates once a day, but lineups can change anytime up until kickoff, so a "top 3 projected" list shown days ahead of the game would go stale and could mislead readers into thinking it reflects a locked-in lineup when it doesn't. Different from the projections already used elsewhere (Tuesday's completed-week recap, Monday's in-progress matchups), where the underlying lineups are already locked/mostly-played, so staleness isn't a real risk there.
 
 ## Conventions
 - No em dashes in documentation, commit messages, or anything shared with others (inherited from the draft board project's convention).
