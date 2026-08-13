@@ -91,14 +91,18 @@ a streak mention if nobody's actually on one):
   their manager (e.g. "X went off for [NFL team], didn't matter, Y still lost").
   Source: each matchup row's `players_points` (per-player score) and `starters`
   (who was actually in the lineup) - already pulled, no new data source needed.
-- **Started-an-inactive-player callouts**: a manager started someone on bye,
-  injured, or otherwise inactive, and got 0 from that slot. Strictly retrospective
-  framing only (see Tone update above). A player scoring 0 isn't proof they didn't
-  play, a legitimately bad game also scores near 0, so cross-reference against
-  bye_weeks.py and the player's `injury_status` in the players/nfl payload before
-  flagging this, don't flag on the 0 alone. Not yet verified against real data
-  which signal reliably distinguishes "didn't play" from "played badly" - test
-  before trusting this in a real checkpoint (see CLAUDE.md Content scope note).
+- **Started-an-inactive-player / injury-exit callouts**: mechanism verified
+  against real data 2026-08-13, full reliability tiers and caveats in CLAUDE.md's
+  Content scope section, summary: bye week (certain) > that game's pre-game
+  injury report via ESPN's per-game `summary?event=<id>` endpoint (reliable,
+  historical) > zero stats in the box score with no bye/injury-report match
+  (soft language only, not certain) > low-but-nonzero stats possibly caused by a
+  mid-game injury exit, detected via `espn_api.injury_exits(event_id)` (built
+  and tested against 4 real games, not just designed - see CLAUDE.md for the
+  full verification and the four caveats it resolves). Strictly retrospective
+  framing only regardless of tier (see Tone update above). Do NOT use Sleeper's
+  `injury_status`/`status`/`team` fields for any of this, all three confirmed
+  current-only/not historical, see CLAUDE.md.
 
 ## Content blocks, per day
 
