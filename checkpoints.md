@@ -57,9 +57,12 @@ After drafting the content per the instructions above:
    was good or bad. Purely factual and retrospective. Reread your own draft now and
    revise anything that crosses this line before continuing.
 
-5. [Placeholder until #5 is built: an independent subagent re-checks the draft
-   against the no-advice rule with fresh context before publishing. Do not skip
-   this once it exists.]
+5. RESOLVED, built and tested 2026-08-13 (see NO-ADVICE-CHECK SUBAGENT PROMPT
+   below). Spawn a subagent (fresh context, has not seen your drafting
+   reasoning, only the draft text) with that exact prompt appended with your
+   draft. It returns either "PASS" or a revised draft with violations removed.
+   If revised, use the subagent's revised version, not your own draft, going
+   into step 6. Do not skip this step.
 
 6. Publish: write the content, categorized by type (added 2026-08-13, per user
    request - so a future UI can slice content by category, e.g. a persistent
@@ -76,6 +79,57 @@ After drafting the content per the instructions above:
 7. Update state/<season>.json: add today's date to `published_dates`, and add any
    newly-reported transaction_ids to `reported_transaction_ids`. Commit and push
    both the published output and the state update together.
+```
+
+## NO-ADVICE-CHECK SUBAGENT PROMPT (#5, RESOLVED and tested 2026-08-13)
+
+Tested via a real subagent run against 5 crafted test snippets before trusting it:
+correctly PASSED a clean recap narrative and a legitimate retrospective roast +
+money joke, correctly CAUGHT an obvious advice violation, a transaction-judgment
+violation, and (the hardest case) forward-looking advice disguised as a joke
+("really needs to start double-checking his lineup...lol, or he's going to keep
+leaving points on the bench") - confirms the time-direction test holds up even
+when advice is wrapped in humor, not just on obvious cases. Full test transcript
+not saved verbatim, but the design and pass/fail results are captured here.
+
+Spawn this as a fresh subagent (must not share context with whatever drafted the
+content - a truly independent read, not the same reasoning thread re-checking its
+own work) with this exact text, then the draft appended after it:
+
+```
+You are an independent editorial reviewer for an automated fantasy football
+league recap. You did not write the draft below and have no context on how or
+why it was written. Review it fresh, on its own merits, as an outside editor
+would.
+
+THE RULE: this recap must be purely factual, retrospective, and schedule-
+oriented. It must never contain advice, recommendations, or anything that gives
+any manager a competitive edge over others going forward.
+
+THE TEST IS TIME DIRECTION, NOT TONE: humor, mockery, and roasting are
+explicitly fine, even when pointed or mean, as long as they describe something
+that already happened and can't be changed (e.g. "started a guy on bye and got
+zero, rough week" is fine, and so is a joke about someone's standing relative to
+the league's money pot). What is NOT fine is anything forward-looking: advice
+about what to do differently, suggestions about roster or waiver moves,
+implications about what a manager "should" do next, or commentary about a
+team's ongoing strategic weaknesses that could inform future opponents'
+decisions. A joke can be mean and still fail this test if it's actually
+forward-looking advice dressed up as a joke.
+
+If in doubt, the content should be removed, not guessed at.
+
+Review the draft below line by line. For each violation found, quote the exact
+offending text and explain why it fails the time-direction test. Then output a
+REVISED version of the draft with violations removed or rewritten to be purely
+retrospective, changing as little else as possible (preserve the tone, jokes,
+and structure of everything that already passes).
+
+If the draft has no violations, say "PASS - no changes needed" and do not alter
+it.
+
+--- DRAFT BELOW ---
+<the draft to check goes here>
 ```
 
 ## Optional content enhancements (added 2026-08-13, use in any content block that recaps completed games)

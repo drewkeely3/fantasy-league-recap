@@ -1,7 +1,7 @@
 # Fantasy League Recap
 
 ## Status
-Design phase complete (schedule, content scope, transaction mechanics all verified against real data). Data-pull layer built and verified against real 2025 season data (see "Data-pull layer" under Architecture). Recap content generation not yet built. This file is the handoff from a scoping conversation done in Cowork; continue building from here.
+Design phase complete (schedule, content scope, transaction mechanics all verified against real data). Data-pull layer built and verified against real 2025 season data (see "Data-pull layer" under Architecture). Persisted state, publishing, season boundary check, all 7 checkpoint prompts (rough draft), and the no-advice-check subagent are all built and tested (see checkpoints.md). Remaining: wire the 7 checkpoints as real scheduled Routines, a real UI/design pass, and an end-to-end test before trusting this on the live league. This file is the handoff from a scoping conversation done in Cowork; continue building from here.
 
 ## What this is
 An automated, scheduled system that generates a recurring fantasy football league recap for a Sleeper league, built as a Claude Code Routine (scheduled task). Shared with the whole league, not just the user.
@@ -68,7 +68,7 @@ Two things learned from that verification, relevant to later steps:
 1. Check persisted state: has this checkpoint already published for the current period? If yes, stop (idempotent, avoids duplicate posts from a safety-net/backup firing). See "Persisted state" below.
 2. Pull relevant data from the Sleeper endpoints above (deterministic).
 3. Draft the content for this checkpoint (see Content scope and Weekly schedule below), enforcing the no-advice constraint in the draft itself.
-4. Run an independent subagent whose only job is to check the draft against the hard no-advice rule (fresh context, not the same reasoning thread that wrote it) and flag or revise anything that crosses the line. Do not publish until this passes.
+4. Run an independent subagent whose only job is to check the draft against the hard no-advice rule (fresh context, not the same reasoning thread that wrote it) and flag or revise anything that crosses the line. Do not publish until this passes. RESOLVED and tested 2026-08-13: exact prompt in checkpoints.md's "NO-ADVICE-CHECK SUBAGENT PROMPT" section. Frames the rule as a time-direction test (retrospective is fine no matter how mean, forward-looking is not, regardless of how it's dressed up), not a niceness filter. Verified against 5 crafted test cases via a real subagent run: correctly passed a clean draft and a legitimate retrospective roast/money joke, correctly caught an obvious advice violation, a transaction-judgment violation, and forward-looking advice disguised as a joke (the hardest case, confirms humor framing doesn't fool the check).
 5. Publish the result.
 6. Update persisted state (mark this checkpoint published, record which transaction_ids were included so future checkpoints know what is already reported).
 
