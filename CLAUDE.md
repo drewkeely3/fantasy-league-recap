@@ -13,6 +13,8 @@ This is the most important rule for this project. The recap must never contain a
 
 This applies to every checkpoint below, not just the main weekly recap.
 
+**Tone clarification (decided with user 2026-08-13):** humor, mockery, and roasting are fine and encouraged (casual, a little mean, not corny) - this is a tone/style choice, not a hard-constraint violation by itself. The hard constraint is about *time direction*, not about being nice. Content must stay strictly retrospective (jokes about what already happened and can't be changed, e.g. "started a guy on bye and got zero, rough week") and never slide into forward-looking framing (e.g. "remember to check the injury report next time," anything implying what a manager should do differently going forward). The test isn't "is this mean," it's "does this help anyone make a better decision going forward." Retrospective roasting doesn't hand anyone a competitive edge since the game already happened; forward-looking advice does, regardless of how nicely or meanly it's phrased. The no-advice-check subagent (see Pipeline shape) needs to apply this exact distinction, not a blanket "no negativity" filter.
+
 ## Data source
 Sleeper's public, read-only API, no auth needed. Key endpoints:
 - `GET /league/<league_id>` — league settings, season, previous_league_id
@@ -111,6 +113,9 @@ Transactions are folded into every checkpoint as a "since last update" section, 
 - Top scorer, worst scorer
 - Bad beat of the week (highest score that still lost)
 - Transactions: cleared waiver claims and resulting adds/drops (not failed claims), trades, reported neutrally, what happened not whether it was smart
+- Streaks (added 2026-08-13): win/loss streaks, or a manager being the highest/lowest scorer N weeks running. Needs pulling multiple weeks of matchup history, not just the current week.
+- Boom/bust player callouts (added 2026-08-13): a player who went off or cratered relative to what's typical, and how it affected their fantasy manager (e.g. "X went off for [NFL team], didn't matter, Y still lost"). Sourced from the per-player points already in each matchup's `players_points`/`starters` fields, no new data pull needed.
+- Started-an-inactive-player callouts (added 2026-08-13): a manager who started someone on bye, injured, or otherwise inactive, who scored 0 as a result. Must stay strictly retrospective per the tone clarification above. Detecting this needs care: a player showing 0 points could mean they didn't play, or just had a legitimately bad game (0 catches, etc.) - cross-reference against bye_weeks.py and the player's injury_status in the players/nfl payload before flagging, don't rely on the 0 alone. Not yet verified against real data which signal (0 points, injury_status, roster's `starters` list) reliably distinguishes these; test before trusting it in a real checkpoint.
 
 **Looking forward:**
 - Next week's matchups
