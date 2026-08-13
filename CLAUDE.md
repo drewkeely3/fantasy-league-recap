@@ -117,8 +117,8 @@ Transactions are folded into every checkpoint as a "since last update" section, 
 - Current standings
 - Upcoming bye weeks league-wide
 
-## Season boundary (not yet implemented)
-Recommended approach: check the league's `playoff_week_start` and bracket size (playoff_teams) each run and skip cleanly once the season is done, rather than manually disabling the Routine. Confirmed via the 2025 league that `last_scored_leg` was 17, matching `playoff_week_start: 15` + a 6-team/3-round bracket, so this league's season is effectively weeks 1-17, not 18. Not yet confirmed as final with the user, revisit when building.
+## Season boundary (RESOLVED, confirmed with user 2026-08-13)
+Check the league's `status` field each run and only proceed if it's exactly `"in_season"`; skip cleanly (no publish, no state update) for any other value. Simpler than an earlier draft that proposed computing from `playoff_week_start` + bracket size: `status` already encodes the answer directly, confirmed against real data (2025 league: `status: "complete"` correlates exactly with `last_scored_leg: 17`, matching `playoff_week_start: 15` + a 6-team/3-round bracket). This single check also covers the *other* boundary the bracket-math approach didn't: `status` is `"pre_draft"` before the draft happens and presumably `"drafting"` during it (the 2026 league showed `pre_draft` as of Aug 2026), so checkpoints that fire before the season starts skip cleanly too, not just ones after it ends.
 
 ## Publishing (not yet decided)
 Push to a free static host (GitHub Pages or Cloudflare Pages under consideration), kept intentionally separate from wherever the Routine itself runs, so the public page stays plain, read-only, no login, no backend. Mechanics of the Routine publishing to it (e.g. committing to a repo that auto-deploys) not yet designed.
